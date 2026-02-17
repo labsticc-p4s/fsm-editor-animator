@@ -1,0 +1,41 @@
+use org.openflexo.technologyadapter.diagram.TypedDiagramModelSlot as DIAGRAM;
+use org.openflexo.technologyadapter.emf.EMFModelSlot as EMF;
+
+import org.openflexo.technologyadapter.diagram.model.Diagram;
+import org.openflexo.technologyadapter.diagram.metamodel.DiagramSpecification;
+import org.openflexo.technologyadapter.emf.model.EMFModel;
+import org.openflexo.technologyadapter.diagram.model.DiagramShape;
+import org.openflexo.technologyadapter.emf.model.EMFObjectIndividual;
+import org.openflexo.technologyadapter.emf.metamodel.EMFMetaModel;
+import org.openflexo.technologyadapter.emf.metamodel.EMFClassClass;
+
+import DiagramSpecification FSM_V1EDITORSPEC from ["http://examples.openflexo.org/fsmV1-editor"];
+import EMFMetaModel FSM_V1 from ["http://examples.openflexo.org/fsmV1"];
+import Diagram EXAMPLE_DIAGRAM from ["http://examples.openflexo.org/fsmV1-editor/ExampleDiagram.diagram"];
+import DiagramShape DIAGRAM_SHAPE from [EXAMPLE_DIAGRAM:"SYL-2"];
+import EMFClassClass STATE from [FSM_V1:"State"];
+
+typedef EMFObjectIndividualType(eClass=STATE) as State;
+
+@URI("file:/Users/sylvainguerin/GIT-2.99/fsm-editor-animator//fsm-editor-animator/FML/FsmV1Editor.fml")
+model FsmV1Editor {
+	Diagram diagram with TypedDiagram(
+      diagramSpecification=FSM_V1EDITORSPEC,
+      paletteElementBindings={
+         PaletteElementBinding:(call=new RegularStateGR::dropRegularStateGRAtTopLevel(), paletteElementId="http://examples.openflexo.org/fsmV1-editor/Palette.palette#RegularStateGR")});
+	EMFModel fsm with EMFModelSlot(metaModel=FSM_V1);
+
+	create::init() {
+		diagram = DIAGRAM::CreateDiagram(resourceName="diagram",resourceCenter=this.resourceCenter,relativePath="Diagrams");
+	}
+
+	concept RegularStateGR {
+		DiagramShape shape with ShapeRole(metamodelElement=DIAGRAM_SHAPE,exampleLabel="Shape",label=state.name);
+		State state with EMFObjectRole(type=STATE);
+
+      RegularStateGR dropRegularStateGRAtTopLevel() with DropScheme(targetType=FsmV1Editor) {
+			state = EMF::AddEMFObject(individualName=parameters.uri,ontologyClass=STATE) in fsm;
+			shape = DIAGRAM::AddShape(container=topLevel) in diagram;
+		}
+	}
+}
