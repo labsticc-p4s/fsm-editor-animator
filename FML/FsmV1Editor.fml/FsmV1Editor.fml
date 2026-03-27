@@ -25,17 +25,47 @@ model FsmV1Editor {
          PaletteElementBinding:(call=new RegularStateGR::dropRegularStateGRAtTopLevel(), paletteElementId="http://examples.openflexo.org/fsmV1-editor/Palette.palette#RegularStateGR")});
 	EMFModel fsm with EMFModelSlot(metaModel=FSM_V1);
 
-	create::init() {
+	create::createNewModel() {
 		diagram = DIAGRAM::CreateDiagram(resourceName="diagram",resourceCenter=this.resourceCenter,relativePath="Diagrams");
 	}
+
+   create::editExistingModel(Resource<EMFModel> aModel) {
+      connect fsm using parameters.aModel;
+      diagram = DIAGRAM::CreateDiagram(resourceName="diagram",resourceCenter=this.resourceCenter,relativePath="Diagrams");
+      this.synchronizeDiagramFromModel();
+      /*for (State state : select State from fsm) {
+         log "State: " + state;
+         RegularStateGR newRegularStateGR = new RegularStateGR::drawRegularState(state); 
+      }*/
+   }
+
+   synchronizeDiagramFromModel() {
+      MatchingSet<RegularStateGR> matchingSet = begin match RegularStateGR from this;
+      for (State aState : select State from fsm) {
+         match RegularStateGR in matchingSet from this where (state=aState) unmatched: new RegularStateGR::drawRegularState(aState);
+      }
+   }
+
+   public debug() {
+      for (State state : select State from fsm) {
+         log "State: " + state;
+      }
+   }
 
 	concept RegularStateGR {
 		DiagramShape shape with ShapeRole(metamodelElement=DIAGRAM_SHAPE,exampleLabel="Shape",label=state.name);
 		State state with EMFObjectRole(type=STATE);
 
       RegularStateGR dropRegularStateGRAtTopLevel() with DropScheme(targetType=FsmV1Editor) {
-			state = EMF::AddEMFObject(individualName=parameters.uri,ontologyClass=STATE) in fsm;
+			state = EMF::AddEMFObject(individualName="State",ontologyClass=STATE) in fsm;
 			shape = DIAGRAM::AddShape(container=topLevel) in diagram;
 		}
+
+      create::drawRegularState(State aState) {
+         log "Draw state " + parameters.aState;
+         state = parameters.aState;
+         shape = DIAGRAM::AddShape(container=diagram) in diagram;
+     }
+
 	}
 }

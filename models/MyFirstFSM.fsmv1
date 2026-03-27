@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fsmV1:FSM xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:fsmV1="http://examples.openflexo.org/fsmV1" name="abc">
+  <states name="&quot;1&quot;" kind="INITIAL"/>
+  <states name="&quot;2&quot;"/>
+  <states name="&quot;3&quot;" kind="FINAL"/>
+  <transitions trigger="&quot;a&quot;" source="//@states.0" destination="//@states.1"/>
+  <transitions trigger="&quot;b&quot;" source="//@states.1" destination="//@states.0"/>
+  <transitions trigger="&quot;c&quot;" source="//@states.1" destination="//@states.2"/>
+</fsmV1:FSM>
