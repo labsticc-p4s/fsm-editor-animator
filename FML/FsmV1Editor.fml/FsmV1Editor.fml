@@ -18,6 +18,8 @@ import Diagram EXAMPLE_DIAGRAM from ["http://examples.openflexo.org/fsmV1-editor
 import DiagramShape REGULAR_STATE_SHAPE from [EXAMPLE_DIAGRAM:"SYL-2"];
 import DiagramShape INITIAL_STATE_SHAPE_1 from [EXAMPLE_DIAGRAM:"SYL-3"];
 import DiagramShape INITIAL_STATE_SHAPE_2 from [EXAMPLE_DIAGRAM:"SYL-4"];
+import DiagramShape FINAL_STATE_SHAPE_1 from [EXAMPLE_DIAGRAM:"SYL-5"];
+import DiagramShape FINAL_STATE_SHAPE_2 from [EXAMPLE_DIAGRAM:"SYL-6"];
 
 typedef EMFObjectIndividualType(eClass=STATE) as State;
 
@@ -31,7 +33,10 @@ model FsmV1Editor {
             paletteElementId="http://examples.openflexo.org/fsmV1-editor/Palette.palette#RegularStateGR"), 
          PaletteElementBinding:(
             call=new InitialStateGR::dropInitialStateGRAtTopLevel(), 
-            paletteElementId="http://examples.openflexo.org/fsmV1-editor/Palette.palette#InitialStateGR")});
+            paletteElementId="http://examples.openflexo.org/fsmV1-editor/Palette.palette#InitialStateGR"), 
+         PaletteElementBinding:(
+            call=new FinalStateGR::dropFinalStateGRAtTopLevel(), 
+            paletteElementId="http://examples.openflexo.org/fsmV1-editor/Palette.palette#FinalStateGR")});
 	EMFModel fsm with EMFModelSlot(metaModel=FSM_V1);
 
 	create::createNewModel() {
@@ -49,9 +54,14 @@ model FsmV1Editor {
    }
 
    public synchronizeDiagramFromModel() {
-      MatchingSet<RegularStateGR> matchingSet = begin match RegularStateGR from this;
+      MatchingSet<RegularStateGR> regularStateMatchingSet = begin match RegularStateGR from this;
+      MatchingSet<InitialStateGR> initialStateMatchingSet = begin match InitialStateGR from this;
+      MatchingSet<FinalStateGR> finalStateMatchingSet = begin match FinalStateGR from this;
       for (State aState : select State from fsm) {
-         match RegularStateGR in matchingSet from this where (state=aState) unmatched: new RegularStateGR::drawRegularState(aState);
+         //log "State "+aState.kind+" of "+aState.kind.getClass();
+         //if (aState.kind.name == "REGULAR") {
+            match RegularStateGR in regularStateMatchingSet from this where (state=aState) unmatched: new RegularStateGR::drawRegularState(aState);
+         //}
       }
    }
 
@@ -74,12 +84,12 @@ model FsmV1Editor {
          log "Draw state " + parameters.aState;
          state = parameters.aState;
          shape = DIAGRAM::AddShape(container=diagram) in diagram;
-     }
+    }
 
-	delete() {
-		delete shape;
+	 delete() {
+	   delete shape;
 		delete state;
-	}
+	 }
 
 	}
 
@@ -94,10 +104,29 @@ model FsmV1Editor {
          center = DIAGRAM::AddShape() in diagram;
 		}
 
-	delete() {
-		delete outline;
-		delete center;
-		delete state;
+	   delete() {
+		   delete outline;
+		   delete center;
+		   delete state;
+	   }
 	}
-	}
+
+	concept FinalStateGR {
+		DiagramShape outline with ShapeRole(metamodelElement=FINAL_STATE_SHAPE_1,exampleLabel="Shape");
+		DiagramShape center with ShapeRole(metamodelElement=FINAL_STATE_SHAPE_2,exampleLabel="Shape",containerElement=outline);
+		State state with EMFObjectRole(type=STATE);
+
+      FinalStateGR dropFinalStateGRAtTopLevel() with DropScheme(targetType=FsmV1Editor) {
+			state = EMF::AddEMFObject(individualName=parameters.uri,ontologyClass=STATE) in fsm;
+			outline = DIAGRAM::AddShape(container=topLevel) in diagram;
+			center = DIAGRAM::AddShape(container=outline) in diagram;
+		}
+
+      delete() {
+         delete outline;
+         delete center;
+         delete state;
+      }
+
+   }
 }
