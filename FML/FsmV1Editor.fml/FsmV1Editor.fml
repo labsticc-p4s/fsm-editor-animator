@@ -58,10 +58,11 @@ model FsmV1Editor {
       MatchingSet<InitialStateGR> initialStateMatchingSet = begin match InitialStateGR from this;
       MatchingSet<FinalStateGR> finalStateMatchingSet = begin match FinalStateGR from this;
       for (State aState : select State from fsm) {
-         //log "State "+aState.kind+" of "+aState.kind.getClass();
-         //if (aState.kind.name == "REGULAR") {
+         log "State prout " + aState.kind + " of " + aState.kind.getClass();
+         log "name : " + aState.kind.name;
+        // if (aState.kind) {
             match RegularStateGR in regularStateMatchingSet from this where (state=aState) unmatched: new RegularStateGR::drawRegularState(aState);
-         //}
+        // }
       }
    }
 
